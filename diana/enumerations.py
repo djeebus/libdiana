@@ -26,7 +26,18 @@ class GameType(Enum):
     peacetime = 4
     border_war = 5
 
-class Console(Enum):
+class Console_pre_2_1(Enum):
+    main_screen = 0
+    helm = 1
+    weapons = 2
+    engineering = 3
+    science = 4
+    comms = 5
+    observer = 6
+    captain_map = 7
+    game_master = 8
+
+class Console_2_1(Enum):
     main_screen = 0
     helm = 1
     weapons = 2
@@ -37,6 +48,19 @@ class Console(Enum):
     observer = 7
     captain_map = 8
     game_master = 9
+
+class Console_2_3(Enum):
+    main_screen = 0
+    helm = 1
+    weapons = 2
+    engineering = 3
+    science = 4
+    comms = 5
+    fighter = 6
+    data = 7
+    observer = 8
+    captain_map = 9
+    game_master = 10
 
 class ConsoleStatus(Enum):
     available = 0

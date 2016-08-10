@@ -1,3 +1,4 @@
+import collections
 import struct
 import sys
 import math
@@ -69,7 +70,13 @@ class VersionPacket:
 
     @classmethod
     def decode(cls, packet):
-        unknown_1, legacy_version, major, minor, patch = unpack('IfIII', packet)
+        if len(packet) == 8:
+            unknown_1, legacy_version = unpack('If', packet)
+            major = int(legacy_version)
+            minor = int(legacy_version - major)
+            patch = 0
+        else:
+            unknown_1, legacy_version, major, minor, patch = unpack('IfIII', packet)
         return cls(major, minor, patch)
 
     def __str__(self):
@@ -95,20 +102,25 @@ class DifficultyPacket:
 @packet(0x19c6e2d4)
 class ConsoleStatusPacket:
     def __init__(self, ship, consoles):
-        self.consoles = {key: consoles.get(key, ConsoleStatus.available) for key in Console}
+        self.consoles = collections.defaultdict(
+            lambda: ConsoleStatus.available,
+        )
+        self.consoles.update(consoles)
         self.ship = ship
 
     def encode(self):
         return pack('I[B]', self.ship,
-                    [(self.consoles[console].value,) for console in Console])
+                    [(self.consoles[console].value,)
+                     for console in self.consoles])
 
     @classmethod
     def decode(cls, packet):
         ship, body = unpack('I[B]', packet)
         body = [x[0] for x in body]
-        if len(body) != len(Console):
-            raise ValueError("Incorrect console count ({}, should be {})".format(len(body), len(Console)))
-        consoles = {console: ConsoleStatus(body[console.value]) for console in Console}
+        consoles = {
+            console_index: ConsoleStatus(value)
+            for console_index, value in enumerate(body)
+        }
         return cls(ship, consoles)
 
     def __str__(self):
